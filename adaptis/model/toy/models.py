@@ -1,12 +1,15 @@
 import torch.nn as nn
 
-from adaptis.model import ops
-from adaptis.model.toy.unet import UNet
-from adaptis.model.adaptis import AdaptIS
 from adaptis.model import basic_blocks
+from adaptis.model import ops
+from adaptis.model.adaptis import AdaptIS
+from adaptis.model.toy.unet import UNet
 
 
-def get_unet_model(channel_width=32, max_width=512, with_proposals=False, rescale_output=(0.2, -1.7), norm_layer=nn.BatchNorm2d):
+def get_unet_model(num_classes=1, channel_width=32, max_width=512, with_proposals=False, rescale_output=(0.2, -1.7),
+                   norm_layer=nn.BatchNorm2d):
+    num_classes += 1  # add bg
+
     unet = UNet(
         num_blocks=4,
         first_channels=channel_width,
@@ -26,7 +29,8 @@ def get_unet_model(channel_width=32, max_width=512, with_proposals=False, rescal
             rescale_output=rescale_output,
             norm_layer=norm_layer
         ),
-        segmentation_head=basic_blocks.ConvHead(2, in_channels=in_channels, num_layers=3, norm_layer=norm_layer),
+        segmentation_head=basic_blocks.ConvHead(num_classes, in_channels=in_channels, num_layers=3,
+                                                norm_layer=norm_layer),
         proposal_head=basic_blocks.ConvHead(1, in_channels=in_channels, num_layers=2, norm_layer=norm_layer),
         with_proposals=with_proposals
     )
